@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DeepSeek → Claude (Dark) Complete Skin
 // @namespace    claude-ds-dark
-// @version      18.3.0
+// @version      18.7.0
 // @description  Covers chat.deepseek.com with a full-screen, opaque, DARK
 //               Claude.ai interface.  DeepSeek's React app keeps running
 //               underneath (handling auth / SSE / PoW / sessions); we bridge
@@ -143,8 +143,7 @@
   // Anthropicons glyph codepoints (exact, measured from claude.ai)
   const G = {
     search:'\uE0D3', toggle:'\uE0DD', newchat:'\uE001', chats:'\uE039',
-    projects:'\uE0C9', artifacts:'\uE017', code:'\uE048', customize:'\uE100',
-    groupby:'\uE070', kebab:'\uE062', settings:'\uE063',
+    projects:'\uE0C9', code:'\uE048', customize:'\uE100', kebab:'\uE062',
     copy:'\uE056', copied:'\uE03B', retry:'\uE0CE', edit:'\uE064',
   };
   const ic = (g) => `<span class="cl-ai" aria-hidden="true">${g}</span>`;
@@ -155,15 +154,8 @@
 
   const I = {
     sparkle: (sz,clr) => `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" fill="${clr}"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>`,
-    pin:      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v14" stroke="currentColor" stroke-width="1.5"/></svg>',
     plus:     '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
     chats:    '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4h9a2 2 0 012 2v5a2 2 0 01-2 2H8l-4 3V6a2 2 0 010-2z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>',
-    folder:   '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l2-2h4l2 2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>',
-    connect:  '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2.2" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 7.5l5 5" stroke="currentColor" stroke-width="1.5"/></svg>',
-    work:     '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 6V5a2 2 0 012-2h2a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.5"/></svg>',
-    code:     '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 7l-3 3 3 3M14 7l3 3-3 3M11.5 5l-3 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    list:     '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 5h9M7 10h9M7 15h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="4" cy="5" r="1" fill="currentColor"/><circle cx="4" cy="10" r="1" fill="currentColor"/><circle cx="4" cy="15" r="1" fill="currentColor"/></svg>',
-    palette:  '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16c1 0 1.5-.8 1.5-1.5 0-.5-.3-.8-.3-1.3 0-.6.5-1.2 1.3-1.2H14a4 4 0 004-4c0-4.4-3.6-8-8-8z" stroke="currentColor" stroke-width="1.5"/><circle cx="6.5" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="6" r="1" fill="currentColor"/><circle cx="13" cy="7" r="1" fill="currentColor"/></svg>',
     download: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v9M6.5 8.5L10 12l3.5-3.5M4 15h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     chevron:  '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2.5 4l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     chevronR: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3.5l3.5 3.5L5 10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -177,10 +169,8 @@
     gear:     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.2v2M10 15.8v2M17.8 10h-2M4.2 10h-2M15.5 4.5l-1.4 1.4M5.9 14.1l-1.4 1.4M15.5 15.5l-1.4-1.4M5.9 5.9L4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
     help:     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 7.6a2.2 2.2 0 114 1.3c-.7.6-1.3.9-1.3 1.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="14" r=".9" fill="currentColor"/></svg>',
     logout:   '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M8 4H5a1 1 0 00-1 1v10a1 1 0 001 1h3M13 13l3-3-3-3M16 10H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    copy:     '<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><rect x="6" y="6" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M12 6V4.5A1.5 1.5 0 0010.5 3h-6A1.5 1.5 0 003 4.5v6A1.5 1.5 0 004.5 12H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     fileIcon: '<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M10 2H5a1.5 1.5 0 00-1.5 1.5v11A1.5 1.5 0 005 16h8a1.5 1.5 0 001.5-1.5V6.5L10 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 2v4.5H14.5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
     close:    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-    retry:    '<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M14.5 8A5.5 5.5 0 105.8 12.7M14.5 4v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
 
   // ╔══════════════════════════════════════════════════════════════════╗
@@ -202,7 +192,6 @@
     return e;
   }
 
-  const greet = () => { const h = new Date().getHours(); return h<12?'Good morning':h<18?'Good afternoon':'Good evening'; };
   // Read the DeepSeek display name with fallbacks; empty string if unknown
   // (greeting then omits the name instead of hard-coding one).
   const userName = () => {
@@ -249,8 +238,39 @@
     // search, account popover, +menu) are appended to document.body — NOT inside
     // .cl-app — so `.cl-light .cl-menu` only matches when body carries cl-light.
     document.body.classList.toggle('cl-light', !!light);
+    // AND push the theme down to DeepSeek's OWN body class. DeepSeek scopes its
+    // code-block / KaTeX / search-result colours to `body.light` / `body.dark`,
+    // NOT to our .cl-app — so when the skin theme differs from DeepSeek's (e.g.
+    // a manual dark skin while DeepSeek follows a light system), cloned code
+    // blocks render light-on-light (a bright box inside the dark UI). Syncing the
+    // underlying theme keeps every mirrored fragment consistent. #root is hidden,
+    // so DeepSeek's own repaint is invisible. Guarded writes ⇒ no observer loop.
+    // The LEVER (verified live) is the body attribute `data-ds-dark-theme`:
+    // present+"dark" ⇒ dark code surface, absent ⇒ light. The body class is NOT
+    // what code/KaTeX colours key off — only this attribute is — so we set the
+    // attribute (and mirror the class for any component that reads it).
+    const b = document.body;
+    if (light) {
+      if (b.hasAttribute('data-ds-dark-theme')) b.removeAttribute('data-ds-dark-theme');
+      if (!b.classList.contains('light')) { b.classList.remove('dark'); b.classList.add('light'); }
+    } else {
+      if (b.getAttribute('data-ds-dark-theme') !== 'dark') b.setAttribute('data-ds-dark-theme', 'dark');
+      if (!b.classList.contains('dark')) { b.classList.remove('light'); b.classList.add('dark'); }
+    }
   }
-  function setTheme(t) { try { GM_setValue('clds_theme', t); } catch(_) {} applyThemeClass(); }
+  // Re-tag already-mirrored code blocks to the new skin theme (token/syntax
+  // colours follow the per-block `md-code-block-light/-dark` modifier, which is
+  // only refreshed while streaming — so a manual theme toggle on a STATIC
+  // conversation would otherwise leave stale token colours until the next turn).
+  function retagMirroredCode() {
+    if (!msgsEl) return;
+    const light = !!document.querySelector('.cl-app')?.classList.contains('cl-light');
+    msgsEl.querySelectorAll('.md-code-block').forEach(blk => {
+      blk.classList.toggle('md-code-block-light', light);
+      blk.classList.toggle('md-code-block-dark', !light);
+    });
+  }
+  function setTheme(t) { try { GM_setValue('clds_theme', t); } catch(_) {} applyThemeClass(); retagMirroredCode(); }
 
   // ╔══════════════════════════════════════════════════════════════════╗
   // ║  CSS                                                            ║
@@ -680,6 +700,12 @@
                   padding:14px 16px; overflow-x:auto; font-family:${D.mono}; font-size:13.5px; }
     .cl-bub code { font-family:${D.mono}; font-size:.92em; }
     .cl-bub :not(pre) > code { background:#1C1C1A; padding:2px 6px; border-radius:5px; }
+    /* DeepSeek fenced code blocks: let their (skin-matched) md-code-block theme own
+       the bg + Prism token colors; we just round + space them and neutralise our
+       generic <pre> styling so it can't repaint the background. */
+    .cl-bub .md-code-block { border-radius:10px; overflow:hidden; margin:8px 0 16px; }
+    .cl-bub .md-code-block pre { background:transparent !important; border:none !important;
+                                 margin:0 !important; border-radius:0 !important; padding:12px 16px; }
     /* KaTeX: let display math breathe + scroll horizontally instead of clipping */
     .cl-bub .katex-display, .cl-think-body .katex-display {
       overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:4px 0 14px; }
@@ -981,7 +1007,12 @@
       || document.querySelector('textarea');
   }
   function dsSendBtn() {
-    return document.querySelector('#root ._52c986b')
+    // The composer's send control is DeepSeek's PRIMARY action button — match the
+    // stable `ds-button--primary` design-system class first (verified live), so a
+    // per-deploy hashed-class change can't silently break sending. Hashed class +
+    // aria + last-button kept only as progressively-weaker fallbacks.
+    return document.querySelector('#root .ds-button--primary')
+      || document.querySelector('#root ._52c986b')
       || document.querySelector('#root [aria-label*="send" i], #root [aria-label*="发送"]')
       || [...document.querySelectorAll('#root [role="button"]')].pop();
   }
@@ -1053,14 +1084,26 @@
 
   // Robustly locate DeepSeek's paperclip/attach control (fallbacks, not just hashed class)
   function dsAttachBtn() {
+    // The attach button shares a container with DeepSeek's hidden file <input>
+    // and carries the STABLE design-system class `ds-button` — so find it by that
+    // association rather than the per-deploy hashed class (.f02f0e25 varies by
+    // build/region, which is why upload broke on the user's Windows Chrome build).
+    const fi = document.querySelector('#root input[type="file"], input[type="file"]');
+    if (fi) {
+      const box = fi.parentElement;
+      const b = (box && box.querySelector('[role="button"],button,.ds-button'))
+             || fi.closest('div')?.querySelector('[role="button"],button,.ds-button');
+      if (b) return b;
+    }
     return document.querySelector('#root .f02f0e25')
-      || (document.querySelector('#root input[type="file"]') || {}).closest?.('div')?.querySelector('[role="button"],button')
       || document.querySelector('#root [aria-label*="upload" i], #root [aria-label*="attach" i], #root [aria-label*="文件"], #root [aria-label*="上传"]');
   }
   function dsAttach() {
+    // Click DeepSeek's attach BUTTON (it opens the OS dialog reliably). The hidden
+    // <input> is lazily mounted/removed, so clicking it directly is unreliable.
     const btn = dsAttachBtn();
     if (btn) { btn.click(); return; }
-    const fi = document.querySelector('#root input[type="file"]');
+    const fi = document.querySelector('#root input[type="file"], input[type="file"]');
     if (fi) fi.click();
   }
 
@@ -1153,6 +1196,22 @@
     return out;
   }
 
+  // Open a chat session robustly across browsers. Try SPA navigation via the live
+  // sidebar link (smooth, no reload); if the URL hasn't changed shortly after
+  // (observed on Windows Chrome, where the synthetic link click doesn't trigger
+  // DeepSeek's router), fall back to a hard navigation to the session URL.
+  function openChatSession(s) {
+    if (!s) return;
+    resetMirror(); hideGreeting();
+    const want = (String(s.href || '').match(/\/chat\/s\/([0-9a-f-]+)/i) || [])[1];
+    try { s.el && s.el.click(); } catch (_) {}
+    if (want) setTimeout(() => {
+      if (currentSessionId() !== want) {
+        try { location.href = new URL(s.href, location.origin).href; } catch (_) {}
+      }
+    }, 380);
+  }
+
   // Read DeepSeek user info (name + avatar)
   function readDSUser() {
     const name = (document.querySelector('#root ._9d8da05')?.textContent || '').trim();
@@ -1183,7 +1242,7 @@
       if (!items.length) { list.appendChild(E('div', { cls:'cl-rec-empty', text: q ? 'No matching chats.' : 'No conversations yet.' })); cnt.textContent=''; return; }
       cnt.textContent = items.length + (items.length === 1 ? ' chat' : ' chats');
       items.forEach(s => list.appendChild(E('div', { cls:'cl-rec-item',
-        onclick(){ resetMirror(); s.el.click(); closeChats(); hideGreeting(); } },
+        onclick(){ closeChats(); openChatSession(s); } },
         [ E('span',{cls:'cl-rec-ico',html:I.chats}), E('span',{cls:'cl-rec-ttl',text:s.title}) ])));
     };
 
@@ -1307,7 +1366,7 @@
         const item = E('div', { cls:'cl-hi', title:s.title }, [
           E('span', { cls:'cl-hi-t', text:s.title }), kebab,
         ]);
-        item.addEventListener('click', () => { try { resetMirror(); s.el.click(); hideGreeting(); } catch(_){} });
+        item.addEventListener('click', () => openChatSession(s));
         kebab.addEventListener('click', (e) => { e.stopPropagation(); openHiMenu(kebab, sid, s.title); });
         histEl.appendChild(item);
       });
@@ -1383,6 +1442,44 @@
       cite.removeAttribute('style');
       cite.textContent = name || ('#' + num) || '•';
       cite.dataset.clDone = '1';
+    });
+  }
+
+  // DeepSeek code blocks carry a theme class (md-code-block-light) + Prism token
+  // colors that follow DEEPSEEK's theme — under our skin they invert (light skin →
+  // white code on light bg; dark skin → black code on dark bg). Re-tag each cloned
+  // block to match OUR skin so bg + tokens stay readable, and wire its cloned
+  // (otherwise dead) Copy / Download controls.
+  function fixCodeBlocks(container) {
+    const light = !!document.querySelector('.cl-app')?.classList.contains('cl-light');
+    container.querySelectorAll('.md-code-block').forEach(block => {
+      // Set BOTH modifiers explicitly: the bg/text come from body[data-ds-dark-theme]
+      // (synced in applyThemeClass), but the syntax-TOKEN palette follows this
+      // per-block modifier — so a dark skin needs `md-code-block-dark`, not just the
+      // absence of `-light`, or keywords render in the light (purple) palette.
+      block.classList.toggle('md-code-block-light', light);
+      block.classList.toggle('md-code-block-dark', !light);
+      if (block.dataset.clWired) return;
+      block.dataset.clWired = '1';
+      const banner = block.querySelector('.md-code-block-banner-wrap') || block.firstElementChild;
+      if (!banner) return;
+      banner.style.cursor = 'pointer';
+      banner.addEventListener('click', (e) => {
+        const el = e.target.closest('div,span,button') || e.target;
+        const t = ((el.textContent) || '').trim().toLowerCase();
+        if (t.length > 16) return;                       // clicked padding / lang label
+        const pre = block.querySelector('pre');
+        const text = (pre ? pre.innerText : block.innerText) || '';
+        if (/download|下载/.test(t)) {
+          const lang = (block.querySelector('[class*="infostring"]')?.textContent || 'txt').trim().slice(0, 8) || 'txt';
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([text], { type:'text/plain' }));
+          a.download = 'code.' + lang; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        } else if (/copy|复制/.test(t)) {
+          navigator.clipboard.writeText(text).catch(() => {});
+        }
+      }, true);
     });
   }
 
@@ -1623,10 +1720,19 @@
   // answer has many .ds-button--icon there) — so for assistant rows we keep only
   // buttons positioned AFTER the answer markdown, and always drop the version arrows.
   function dsActionButtons(row) {
-    let all = [...row.querySelectorAll('[role="button"].ds-button--icon')];
     const answer = row.querySelector('.ds-markdown.ds-assistant-message-main-content');
+    // Match by [role=button] — this DeepSeek build labels footer buttons
+    // `ds-button--iconLabelTertiary` (older builds used `ds-button--icon`, so the
+    // old class selector matched NOTHING here → Retry/Edit silently no-op'd).
+    let all = [...row.querySelectorAll('[role="button"]')];
     if (answer) {
-      all = all.filter(b => answer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      // Footer toolbar only: AFTER the answer markdown AND NOT inside it.
+      // compareDocumentPosition() flags descendants as FOLLOWING too, so without
+      // the !contains() guard the code block's own Copy/Download buttons leak in
+      // and shift indices (which is why Retry was hitting the code "Download").
+      // Verified order → [Copy, Regenerate, Like, Dislike, Share].
+      all = all.filter(b => !answer.contains(b) &&
+        (answer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
     }
     const vi = dsVerInfo(row);
     if (vi) all = all.filter(b => b !== vi.prev && b !== vi.next);
@@ -1690,8 +1796,12 @@
       dsClick(editBtn);
       let tries = 0;
       const tick = () => {
-        const ta = [...document.querySelectorAll('textarea.ds-textarea__textarea, textarea')]
-          .filter(t => t.offsetParent !== null).pop();
+        // DeepSeek's edit box only — scope to #root + the edit class so we never
+        // grab our own overlay textarea (.cl-ta), which lives outside #root.
+        const ta = ([...document.querySelectorAll('#root textarea.ds-textarea__textarea')]
+                    .filter(t => t.offsetParent !== null).pop())
+                || ([...document.querySelectorAll('#root textarea')]
+                    .filter(t => t.offsetParent !== null && !t.classList.contains('cl-ta')).pop());
         if (ta) {
           try {
             const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -1700,8 +1810,8 @@
           ta.dispatchEvent(new Event('input', { bubbles:true }));
           resetMirror();
           setTimeout(() => {
-            const send = [...document.querySelectorAll('[role="button"],button,.ds-button')]
-              .find(b => b.offsetParent !== null && /^(send|发送|save|保存)$/i.test(b.textContent.trim()));
+            const send = [...document.querySelectorAll('#root [role="button"],#root button,#root .ds-button')]
+              .find(b => b.offsetParent !== null && /^(send|发送|save|保存)$/i.test((b.textContent||'').trim()));
             dsClick(send);
           }, 70);
         } else if (tries++ < 25) setTimeout(tick, 50);
@@ -1748,7 +1858,7 @@
     const ansSrc = answer || (think ? null : anyMd);
     if (ansSrc) {
       const len = ansSrc.innerHTML.length;
-      if (len !== st.ansLen) { st.bub.innerHTML = ansSrc.innerHTML; cleanStyles(st.bub); decorateCitations(st.bub); st.ansLen = len; }
+      if (len !== st.ansLen) { st.bub.innerHTML = ansSrc.innerHTML; cleanStyles(st.bub); decorateCitations(st.bub); fixCodeBlocks(st.bub); st.ansLen = len; }
       st.bub.style.display = '';
     } else {
       st.bub.style.display = 'none';   // pure-thinking phase, no answer yet
@@ -2251,8 +2361,11 @@
 
     // Favicon: a Claude clay-sparkle data-URI. Remove DeepSeek's icons + re-assert
     // if DeepSeek re-adds them.
+    // Genuine DeepSeek whale mark (fetched from fe-static.deepseek.com/chat/favicon.svg),
+    // recoloured from its native blue (#4D6BFE) to Claude's clay orange. Transparent bg.
     const FAV = 'data:image/svg+xml,' + encodeURIComponent(
-      I.sparkle(100, '#D97757').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '));
+      '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50" fill="none">' +
+      '<path fill="#D97757" d="M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479ZM24.3262 37.8398C20.1196 34.4639 18.0791 33.3521 17.2358 33.3999C16.4482 33.4482 16.5898 34.3682 16.7632 34.9678C16.9443 35.5601 17.1812 35.9683 17.5117 36.4878C17.7402 36.832 17.8979 37.3442 17.2832 37.728C15.9282 38.584 13.5728 37.4399 13.4624 37.3838C10.7207 35.7358 8.42822 33.5601 6.81348 30.584C5.25342 27.7197 4.34766 24.6479 4.19775 21.3677C4.1582 20.5757 4.38672 20.2959 5.15869 20.1519C6.17529 19.96 7.22314 19.9199 8.23926 20.0718C12.5327 20.7119 16.1885 22.6719 19.2529 25.7759C21.002 27.5439 22.3252 29.6558 23.6885 31.7202C25.1377 33.9121 26.6978 36 28.6831 37.7119C29.3843 38.312 29.9434 38.7681 30.479 39.104C28.8643 39.2881 26.1699 39.3281 24.3262 37.8398ZM26.3433 24.6001C26.3433 24.248 26.6191 23.9678 26.9658 23.9678C27.0444 23.9678 27.1152 23.9839 27.1782 24.0078C27.2651 24.04 27.3438 24.0879 27.4067 24.1602C27.5171 24.272 27.5801 24.4321 27.5801 24.6001C27.5801 24.9521 27.3042 25.2319 26.9575 25.2319C26.6108 25.2319 26.3433 24.9521 26.3433 24.6001ZM32.6064 27.8799C32.2046 28.0479 31.8027 28.1919 31.4165 28.208C30.8179 28.2397 30.1641 27.9922 29.8096 27.688C29.2583 27.2158 28.8643 26.9521 28.6987 26.1279C28.6279 25.7759 28.6675 25.2319 28.7305 24.9199C28.8721 24.248 28.7144 23.8159 28.2495 23.4238C27.8716 23.104 27.3911 23.0161 26.8633 23.0161C26.666 23.0161 26.4849 22.9277 26.3511 22.856C26.1304 22.7441 25.9492 22.4639 26.1226 22.1201C26.1777 22.0078 26.4458 21.7358 26.5088 21.688C27.2256 21.272 28.0527 21.4077 28.8169 21.7197C29.5259 22.0161 30.0615 22.5601 30.834 23.3281C31.6216 24.2559 31.7632 24.5117 32.2124 25.208C32.5669 25.752 32.8901 26.312 33.1104 26.9521C33.2446 27.3521 33.0713 27.6802 32.6064 27.8799Z"/></svg>');
     function setFavicon() {
       [...document.querySelectorAll('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]')]
         .forEach(l => { if (l.dataset.cl !== '1') l.remove(); });
@@ -2400,7 +2513,7 @@
     cleanupTempOnLoad();
     watchTempSession();
 
-    console.log('%c[Claude→DS]%c v17 ready.', 'color:#D97757;font-weight:700', '');
+    console.log('%c[Claude→DS]%c v18.7.0 ready.', 'color:#D97757;font-weight:700', '');
   }
 
   main();
