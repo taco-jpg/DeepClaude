@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DeepSeek → Claude (Dark) Complete Skin
 // @namespace    claude-ds-dark
-// @version      18.7.0
+// @version      18.8.0
 // @description  Covers chat.deepseek.com with a full-screen, opaque, DARK
 //               Claude.ai interface.  DeepSeek's React app keeps running
 //               underneath (handling auth / SSE / PoW / sessions); we bridge
@@ -1020,7 +1020,10 @@
   // Effort now has a real effect: High/Extra/Max enable DeepThink, and
   // Low/Extra/Max prepend a reasoning-intensity instruction to the message.
   const HIGH_EFFORT = (e) => e === 'High' || e === 'Extra' || e === 'Max';
-  function wantThink() { return !!thinking || HIGH_EFFORT(effort); }
+  // High effort auto-enables DeepThink ONLY on thinking-capable tiers — Haiku is
+  // documented as "no thinking, fast", and the default effort is High, so without
+  // this gate Haiku always ran with DeepThink on.
+  function wantThink() { return !!thinking || (HIGH_EFFORT(effort) && !!cfg().thinking); }
   function effortHint() {
     if (effort === 'Low')    return '请简洁、直接地回答，不要冗长展开。';
     if (effort === 'Extra')  return '请更深入、更全面、多角度地分析后再回答。';
@@ -1073,6 +1076,7 @@
 
     ta.value = '';
     ta.style.height = 'auto';
+    const sb = document.getElementById('cl-send'); if (sb) sb.disabled = true;
     hideGreeting();
   }
 
@@ -1416,6 +1420,17 @@
     return t;
   }
 
+  // User-row text WITHOUT attachment-card text. The file cards
+  // (.ds-animated-size-item) live inside the same row, so a plain
+  // row.textContent would leak "name.pdf 12.3KB…" into the mirrored bubble
+  // and the inline editor; the cards are mirrored separately by syncUserFiles.
+  function userRowText(row) {
+    if (!row.querySelector('.ds-animated-size-item')) return stripSys(row.textContent.trim());
+    const clone = row.cloneNode(true);
+    clone.querySelectorAll('.ds-animated-size-item').forEach(n => n.remove());
+    return stripSys(clone.textContent.trim());
+  }
+
   // Strip DeepSeek's inline color/font styles so our theme applies — but NEVER
   // touch KaTeX subtrees: KaTeX positions every sub/superscript with inline
   // height/margin/top values; removing them collapses all math onto one line.
@@ -1559,7 +1574,7 @@
   // notice + Cancel / Save. Save drives DeepSeek's real edit (creates a branch).
   function openInlineEdit(st) {
     if (st.editing) return; st.editing = true;
-    const original = stripSys(st.srcRow.textContent.trim());
+    const original = userRowText(st.srcRow);
     st.bub.style.display = 'none';
     const ta = E('textarea', { cls:'cl-edit-ta' });
     ta.value = original;
@@ -1827,7 +1842,7 @@
     st.srcRow = row;   // keep the DeepSeek row ref fresh — virtual list recycles nodes
     if (st.role === 'user') {
       const len = row.textContent.length;
-      if (len !== st.userLen && !st.editing) { st.bub.textContent = stripSys(row.textContent.trim()); st.userLen = len; }
+      if (len !== st.userLen && !st.editing) { st.bub.textContent = userRowText(row); st.userLen = len; }
       syncUserFiles(st, row);
       syncVer(st);
       return;
@@ -1950,6 +1965,9 @@
   function setChatting(on) {
     const app = document.querySelector('.cl-app');
     if (app) app.classList.toggle('cl-app--chatting', !!on);
+    // Placeholder follows the screen, like claude.ai: welcome vs. conversation
+    const ta0 = document.getElementById('cl-ta');
+    if (ta0) ta0.placeholder = on ? 'Reply to Claude…' : 'How can I help you today?';
     // Move the input between the centered welcome and the bottom dock
     const inwrap = document.querySelector('.cl-inwrap');
     const dock = document.getElementById('cl-dock');
@@ -2007,7 +2025,7 @@
   }
 
   function buildSub() {
-    const rows = C.EFFORTS.map(ef => E('div',{cls:'cl-er', onclick:(e)=>{e.stopPropagation(); effort=ef; saveAll(); refreshMsb(); buildSubRefresh();}},[
+    const rows = C.EFFORTS.map(ef => E('div',{cls:'cl-er', onclick:(e)=>{e.stopPropagation(); effort=ef; saveAll(); applyDSModel(); refreshMsb(); buildSubRefresh();}},[
       E('div',{cls:'cl-er-l'},[ E('span',{text:ef}),
         ef==='High'?E('span',{cls:'cl-er-tag',text:'Default'}):null,
         ef==='Max'?E('span',{cls:'cl-er-tag',html:I.info}):null ]),
@@ -2089,11 +2107,15 @@
       { cls:'cl-row'+(accent?' cl-row--accent':''), onclick:onClick||(()=>{}) },
       [ E('span',{cls:'cl-ai',html:glyph}), E('span',{cls:'cl-lbl',text:label}) ]);
 
-    const collapseBtn = E('button', { cls:'cl-ib', 'aria-label':'Close sidebar',
-      html: ic(G.toggle), onclick:()=>document.querySelector('.cl-sb').classList.toggle('cl-sb--collapsed') });
+    const isMac = /Mac|iPhone|iPad/i.test(navigator.platform || '');
+    const searchBtn = ibtn(ic(G.search), 'Search chats', isMac ? '⌘ K' : 'Ctrl K', toggleChats);
+    searchBtn.setAttribute('aria-label', 'Search chats');
+    const collapseBtn = ibtn(ic(G.toggle), 'Toggle sidebar', '',
+      () => document.querySelector('.cl-sb').classList.toggle('cl-sb--collapsed'));
+    collapseBtn.setAttribute('aria-label', 'Toggle sidebar');
 
     const userBtn = E('button', { cls:'cl-user' }, [
-      E('span', { cls:'cl-av', text:'L' }),
+      E('span', { cls:'cl-av', text:(userName()[0] || 'U').toUpperCase() }),
       E('span', { cls:'cl-user-meta' }, [
         E('span', { cls:'cl-user-name', text:userName() }),
         E('span', { cls:'cl-user-plan', text:'Free plan' }),
@@ -2106,14 +2128,14 @@
     const sidebar = E('nav', { cls:'cl-sb' }, [
       E('div', { cls:'cl-sbtop' }, [
         E('div', { cls:'cl-logo-wm', html: WM }),
-        E('button', { cls:'cl-ib', 'aria-label':'Search', html: ic(G.search), onclick: toggleChats }),
+        searchBtn,
         collapseBtn,
       ]),
       E('div', { cls:'cl-nav' }, [
         navRow(G.newchat,   'New chat',  dsNewChat, true),
         navRow(G.chats,     'Chats',     toggleChats),
         navRow(G.code,      'Code',      () => fillPrompt('Help me write code for ')),
-        navRow(G.customize, 'System prompt', toggleSysPrompt),
+        (() => { const r = navRow(G.customize, 'System prompt', toggleSysPrompt); r.id = 'cl-sysrow'; return r; })(),
       ]),
       E('div', { cls:'cl-sec', text:'Recents' }),
       histEl,
@@ -2135,8 +2157,9 @@
 
     // Textarea — stopPropagation so DeepSeek's global keyboard shortcuts can't
     // hijack copy/paste/select; Enter sends, Shift+Enter newline.
-    const ta = E('textarea', { id:'cl-ta', cls:'cl-ta', placeholder:'Write a message…', rows:1,
-      oninput(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,340)+'px'; },
+    const ta = E('textarea', { id:'cl-ta', cls:'cl-ta', placeholder:'How can I help you today?', rows:1,
+      oninput(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,340)+'px';
+                 const sb=document.getElementById('cl-send'); if(sb) sb.disabled=!this.value.trim(); },
       onkeydown(e){ e.stopPropagation(); if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } },
       onkeyup(e){ e.stopPropagation(); },
       onkeypress(e){ e.stopPropagation(); },
@@ -2144,7 +2167,8 @@
       oncopy(e){ e.stopPropagation(); },
       oncut(e){ e.stopPropagation(); },
     });
-    const sendBtn = E('button', { cls:'cl-send', html:I.arrow, onclick:sendMessage });
+    const sendBtn = E('button', { id:'cl-send', cls:'cl-send', html:I.arrow, 'aria-label':'Send message', onclick:sendMessage });
+    sendBtn.disabled = true;   // claude.ai dims the send button until there's input
     const plusBtn = E('button', { cls:'cl-plus', html:I.plus, onclick:(e)=>{ e.stopPropagation(); openPlusMenu(plusBtn); } });
     const chips = E('div', { cls:'cl-chips', id:'cl-chips', style:{display:'none'} });
 
@@ -2163,7 +2187,7 @@
 
     // Input wrapper (moved between welcome-center and bottom-dock by setChatting)
     const inwrap = E('div', { cls:'cl-inwrap' }, [ inputBox ]);
-    const disc = E('div', { cls:'cl-disc', text:'Claude is AI and can make mistakes. Please double-check responses.' });
+    const disc = E('div', { cls:'cl-disc', text:'Claude can make mistakes. Please double-check responses.' });
 
     // Messages area (scrolls)
     msgsEl = E('div', { cls:'cl-msgs', style:{display:'none'} });
@@ -2320,7 +2344,10 @@
     requestAnimationFrame(() => sysPanel.classList.add('cl-cp--open'));
     setTimeout(() => document.addEventListener('mousedown', outsideSys, true), 0);
   }
-  function outsideSys(e){ if (sysPanel && !sysPanel.contains(e.target) && !e.target.closest('.cl-ib')) closeSys(); }
+  // Ignore mousedown on the "System prompt" nav row itself — otherwise the
+  // mousedown closed the panel and the row's click reopened it, so the row
+  // could only ever open the panel, never toggle it shut.
+  function outsideSys(e){ if (sysPanel && !sysPanel.contains(e.target) && !e.target.closest('#cl-sysrow')) closeSys(); }
   function closeSys() {
     if (!sysOpen) return; sysOpen = false;
     document.removeEventListener('mousedown', outsideSys, true);
@@ -2359,13 +2386,11 @@
     new MutationObserver(fixTitle)
       .observe(document.querySelector('title') || document.head, { childList:true, subtree:true, characterData:true });
 
-    // Favicon: a Claude clay-sparkle data-URI. Remove DeepSeek's icons + re-assert
-    // if DeepSeek re-adds them.
-    // Genuine DeepSeek whale mark (fetched from fe-static.deepseek.com/chat/favicon.svg),
-    // recoloured from its native blue (#4D6BFE) to Claude's clay orange. Transparent bg.
+    // Favicon: the Claude clay sparkle (same mark as the in-app logo) on a
+    // transparent background — matches claude.ai's tab icon. Remove DeepSeek's
+    // icons + re-assert if DeepSeek re-adds them.
     const FAV = 'data:image/svg+xml,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50" fill="none">' +
-      '<path fill="#D97757" d="M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479ZM24.3262 37.8398C20.1196 34.4639 18.0791 33.3521 17.2358 33.3999C16.4482 33.4482 16.5898 34.3682 16.7632 34.9678C16.9443 35.5601 17.1812 35.9683 17.5117 36.4878C17.7402 36.832 17.8979 37.3442 17.2832 37.728C15.9282 38.584 13.5728 37.4399 13.4624 37.3838C10.7207 35.7358 8.42822 33.5601 6.81348 30.584C5.25342 27.7197 4.34766 24.6479 4.19775 21.3677C4.1582 20.5757 4.38672 20.2959 5.15869 20.1519C6.17529 19.96 7.22314 19.9199 8.23926 20.0718C12.5327 20.7119 16.1885 22.6719 19.2529 25.7759C21.002 27.5439 22.3252 29.6558 23.6885 31.7202C25.1377 33.9121 26.6978 36 28.6831 37.7119C29.3843 38.312 29.9434 38.7681 30.479 39.104C28.8643 39.2881 26.1699 39.3281 24.3262 37.8398ZM26.3433 24.6001C26.3433 24.248 26.6191 23.9678 26.9658 23.9678C27.0444 23.9678 27.1152 23.9839 27.1782 24.0078C27.2651 24.04 27.3438 24.0879 27.4067 24.1602C27.5171 24.272 27.5801 24.4321 27.5801 24.6001C27.5801 24.9521 27.3042 25.2319 26.9575 25.2319C26.6108 25.2319 26.3433 24.9521 26.3433 24.6001ZM32.6064 27.8799C32.2046 28.0479 31.8027 28.1919 31.4165 28.208C30.8179 28.2397 30.1641 27.9922 29.8096 27.688C29.2583 27.2158 28.8643 26.9521 28.6987 26.1279C28.6279 25.7759 28.6675 25.2319 28.7305 24.9199C28.8721 24.248 28.7144 23.8159 28.2495 23.4238C27.8716 23.104 27.3911 23.0161 26.8633 23.0161C26.666 23.0161 26.4849 22.9277 26.3511 22.856C26.1304 22.7441 25.9492 22.4639 26.1226 22.1201C26.1777 22.0078 26.4458 21.7358 26.5088 21.688C27.2256 21.272 28.0527 21.4077 28.8169 21.7197C29.5259 22.0161 30.0615 22.5601 30.834 23.3281C31.6216 24.2559 31.7632 24.5117 32.2124 25.208C32.5669 25.752 32.8901 26.312 33.1104 26.9521C33.2446 27.3521 33.0713 27.6802 32.6064 27.8799Z"/></svg>');
+      I.sparkle(50, '#D97757').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '));
     function setFavicon() {
       [...document.querySelectorAll('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]')]
         .forEach(l => { if (l.dataset.cl !== '1') l.remove(); });
@@ -2380,6 +2405,20 @@
 
     const app = buildApp();
     document.body.appendChild(app);
+
+    // Keyboard shortcuts — capture phase, so the composer's stopPropagation
+    // can't swallow them (matches claude.ai): ⌘/Ctrl+K → search chats,
+    // ⌘/Ctrl+Shift+O → new chat, Esc → dismiss any open popup/panel.
+    document.addEventListener('keydown', (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && !e.shiftKey && !e.altKey && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault(); toggleChats(); return;
+      }
+      if (mod && e.shiftKey && !e.altKey && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault(); dsNewChat(); return;
+      }
+      if (e.key === 'Escape') { closeMenu(); closePlusMenu(); closeHiMenu(); closeAccount(); closeSys(); }
+    }, true);
 
     // ---- Light-mode overrides (skin follows DeepSeek's Settings → theme) ----
     GM_addStyle(`
@@ -2425,9 +2464,13 @@
       .cl-light .cl-msb { color:#3A3A38; }
       .cl-light .cl-msb-l { color:#1A1A18; }
       .cl-light .cl-msb-eff, .cl-light .cl-msb-cv { color:#8A8980; }
-      /* Plus / attach / web-search toggles + their hover */
-      .cl-light .cl-plus:hover, .cl-light .cl-send:not(:disabled):hover,
-      .cl-light .cl-tog:hover, .cl-light .cl-act:hover, .cl-light .cl-ver-b:hover { background:#EFEEE9; }
+      /* Plus / attach / web-search toggles + their hover. NOTE: the send button
+         keeps its brand hover (the old grey override made the white arrow
+         invisible), and the Thinking toggle only greys when OFF (the old rule
+         wiped its brand color on hover while ON). */
+      .cl-light .cl-plus:hover,
+      .cl-light .cl-tog:not(.cl-tog--on):hover, .cl-light .cl-act:hover, .cl-light .cl-ver-b:hover { background:#EFEEE9; }
+      .cl-light .cl-send:disabled { background:#E6E5DF; color:#B3B2A9; }
       .cl-light .cl-act { color:#8A8980; }
       .cl-light .cl-act:hover { color:#1A1A18; }
       .cl-light .cl-ver-b { color:#8A8980; }
@@ -2513,7 +2556,7 @@
     cleanupTempOnLoad();
     watchTempSession();
 
-    console.log('%c[Claude→DS]%c v18.7.0 ready.', 'color:#D97757;font-weight:700', '');
+    console.log('%c[Claude→DS]%c v18.8.0 ready.', 'color:#D97757;font-weight:700', '');
   }
 
   main();
