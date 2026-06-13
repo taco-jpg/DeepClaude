@@ -73,12 +73,15 @@
 - Click your avatar at the bottom left.  
 - Switch theme, open DeepSeek’s settings / help / download, or log out.
 
-## ⌨️ Keyboard shortcuts (in the input box)
+## ⌨️ Keyboard shortcuts
 
-| Key               | Action                |
-| ----------------- | --------------------- |
-| `Enter`           | Send message          |
-| `Shift + Enter`   | New line              |
+| Key                       | Action                                  |
+| ------------------------- | --------------------------------------- |
+| `Enter`                   | Send message                            |
+| `Shift + Enter`           | New line                                |
+| `⌘ / Ctrl + K`            | Open the searchable Chats panel         |
+| `⌘ / Ctrl + Shift + O`    | New chat                                |
+| `Esc`                     | Close any open menu / panel             |
 
 ## 🎨 Theme behaviour
 
